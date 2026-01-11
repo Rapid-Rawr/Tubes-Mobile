@@ -1,0 +1,12 @@
+# Django
+__pycache__/
+*.pyc
+*.pyo
+db.sqlite3
+
+# Migrations cache
+*.log
+
+# Media & static
+media/
+staticfiles/

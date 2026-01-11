@@ -6,15 +6,15 @@ import 'package:tubes_mobile/src/cart/views/cart_screen.dart';
 import 'package:tubes_mobile/src/entrypoint/controllers/bottom_tab_notifier.dart';
 import 'package:tubes_mobile/src/home/views/home_screen.dart';
 import 'package:tubes_mobile/src/profile/views/profile_screen.dart';
-import 'package:tubes_mobile/src/wishlist/views/wishlist_screen.dart';
+import 'package:tubes_mobile/src/history/views/history_screen.dart';
 
 class AppEntryPoint extends StatelessWidget {
   AppEntryPoint({super.key});
 
   List<Widget> pageList = [
     const HomePage(),
-    const WishListPage(),
-    const CartPage(),
+    const HistoryPage(),
+    const CartPage(cartItems: [],),
     const ProfilePage(),
   ];
 
@@ -68,7 +68,7 @@ class AppEntryPoint extends StatelessWidget {
                                 Ionicons.heart_outline,
                                 size: 24,
                               ),
-                        label: "WishList",
+                        label: "History",
                       ),
                       BottomNavigationBarItem(
                         icon: tabIndexNotifier.index == 2
