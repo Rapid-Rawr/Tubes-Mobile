@@ -154,7 +154,15 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "http://127.0.0.1:3000",]
+    "http://127.0.0.1:3000",
+     "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost",  # Untuk Flutter Web
+    "http://127.0.0.1",  # Untuk Flutter Web
+    "http://localhost:3000",  # Port Flutter Web biasanya 3000-5000
+    "http://127.0.0.1:3000",
+    "http://10.0.2.2:8000",  # Untuk And
+    ]
 
 DJOSER = {
     'LOGIN_FIELD': 'email',
@@ -180,3 +188,27 @@ SIMPLE_JWT = {
 }
 
 AUTH_USER_MODEL = 'users.CustomUser'
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
