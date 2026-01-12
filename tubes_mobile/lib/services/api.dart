@@ -3,8 +3,8 @@ import 'package:http/http.dart' as http;
 import 'auth.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://10.0.2.2:8000';
-  
+  static const String baseUrl = 'http://localhost:8000';
+
   static Future<Map<String, String>> _getHeaders() async {
     final token = await AuthService.getToken();
     return {
@@ -14,22 +14,66 @@ class ApiService {
   }
 
   static Future<List<dynamic>> getProducts() async {
-    try {
-      final headers = await _getHeaders();
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/products/'),
-        headers: headers,
-      );
+  try {
+    final headers = await _getHeaders();
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/products/'),
+      headers: headers,
+    );
 
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+    print('📦 Products Response Status: ${response.statusCode}');
+    
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      
+      // Handle pagination format
+      if (data is Map && data.containsKey('results')) {
+        print('📦 Products (pagination): ${data['results'].length} items');
+        return data['results'];
       }
-      return [];
-    } catch (e) {
-      print('Error getting products: $e');
-      return [];
+      // Jika langsung array
+      else if (data is List) {
+        print('📦 Products (direct): ${data.length} items');
+        return data;
+      }
     }
+    return [];
+  } catch (e) {
+    print('Error getting products: $e');
+    return [];
   }
+}
+
+static Future<List<dynamic>> getTransactions() async {
+  try {
+    final headers = await _getHeaders();
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/transactions/'),
+      headers: headers,
+    );
+
+    print('💳 Transactions Response Status: ${response.statusCode}');
+    
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      
+      // Handle pagination format
+      if (data is Map && data.containsKey('results')) {
+        print('💳 Transactions (pagination): ${data['results'].length} items');
+        return data['results'];
+      }
+      // Jika langsung array
+      else if (data is List) {
+        print('💳 Transactions (direct): ${data.length} items');
+        return data;
+      }
+    }
+    return [];
+  } catch (e) {
+    print('Error getting transactions: $e');
+    return [];
+  }
+}
 
   static Future<Map<String, dynamic>?> getProductDetail(int id) async {
     try {
@@ -57,8 +101,23 @@ class ApiService {
         headers: headers,
       );
 
+      print('🛒 Cart Response Status: ${response.statusCode}');
+      print('🛒 Cart Response Body: ${response.body}');
+
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+        final data = jsonDecode(response.body);
+
+        // Handle pagination format
+        if (data is Map && data.containsKey('results')) {
+          print(
+              '🛒 Pagination format detected, results count: ${data['results'].length}');
+          return data['results']; // Return the array inside 'results'
+        }
+        // Jika langsung array (format lama)
+        else if (data is List) {
+          print('🛒 Direct array format detected, count: ${data.length}');
+          return data;
+        }
       }
       return [];
     } catch (e) {
@@ -139,21 +198,5 @@ class ApiService {
     }
   }
 
-  static Future<List<dynamic>> getTransactions() async {
-    try {
-      final headers = await _getHeaders();
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/transactions/'),
-        headers: headers,
-      );
 
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      }
-      return [];
-    } catch (e) {
-      print('Error getting transactions: $e');
-      return [];
-    }
-  }
 }

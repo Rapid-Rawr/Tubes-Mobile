@@ -24,30 +24,54 @@ class _CartScreenState extends State<CartScreen> {
 
   Future<void> _loadCart() async {
     setState(() => _isLoading = true);
-    
+
     try {
+      print('🔄 Loading cart...');
       final data = await ApiService.getCart();
-      final items = data.map((json) => CartItem.fromJson(json)).toList();
-      
+
+      print('🛒 API response length: ${data.length}');
+
+      final List<CartItem> items = [];
       double total = 0;
-      for (var item in items) {
-        total += item.subtotal;
+
+      for (var json in data) {
+        try {
+          print('🛒 Processing item: $json');
+          final item = CartItem.fromJson(json);
+          items.add(item);
+          total += item.subtotal; // Gunakan subtotal dari API
+          print('🛒 Added item: ${item.toString()}');
+        } catch (e) {
+          print('❌ Error converting item: $e');
+          print('❌ Problematic JSON: $json');
+        }
       }
-      
+
+      print('🛒 Total items loaded: ${items.length}');
+      print('🛒 Calculated total: $total');
+
       setState(() {
         _cartItems = items;
         _total = total;
       });
     } catch (e) {
-      print('Error loading cart: $e');
+      print('❌ Error loading cart: $e');
+      print('❌ Stack trace: ${e.toString()}');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to load cart: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
-    
+
     setState(() => _isLoading = false);
   }
 
   Future<void> _updateQuantity(int cartId, int newQuantity) async {
     if (newQuantity < 1) return;
-    
+
     final success = await ApiService.updateCartItem(cartId, newQuantity);
     if (success) {
       _loadCart();
@@ -139,9 +163,9 @@ class _CartScreenState extends State<CartScreen> {
 
   String _formatPrice(double price) {
     return 'Rp ${price.toStringAsFixed(0).replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (Match m) => '${m[1]}.',
-    )}';
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match m) => '${m[1]}.',
+        )}';
   }
 
   @override
@@ -167,22 +191,33 @@ class _CartScreenState extends State<CartScreen> {
                             return Card(
                               margin: const EdgeInsets.only(bottom: 10),
                               child: ListTile(
-                                leading: item.barangDetail?['gambar_url'] != null
-                                    ? Image.network(
-                                        item.barangDetail!['gambar_url'],
-                                        width: 50,
-                                        height: 50,
-                                        fit: BoxFit.cover,
-                                      )
-                                    : const Icon(Icons.image, size: 40),
+                                leading:
+                                    item.barangDetail?['gambar_url'] != null
+                                        ? Image.network(
+                                            item.barangDetail!['gambar_url'],
+                                            width: 50,
+                                            height: 50,
+                                            fit: BoxFit.cover,
+                                          )
+                                        : const Icon(Icons.image, size: 40),
                                 title: Text(
                                   item.barangDetail?['nama'] ?? 'Product',
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
                                 ),
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('Price: ${_formatPrice(item.barangDetail?['harga'] ?? 0)}'),
+                                    Text(
+                                      'Price: ${_formatPrice(
+                                        item.barangDetail?['harga'] is String
+                                            ? double.tryParse(item
+                                                    .barangDetail!['harga']) ??
+                                                0.0
+                                            : (item.barangDetail?['harga'] ?? 0)
+                                                .toDouble(),
+                                      )}',
+                                    ),
                                     const SizedBox(height: 5),
                                     Row(
                                       children: [
@@ -199,8 +234,10 @@ class _CartScreenState extends State<CartScreen> {
                                           width: 40,
                                           padding: const EdgeInsets.all(5),
                                           decoration: BoxDecoration(
-                                            border: Border.all(color: Colors.grey),
-                                            borderRadius: BorderRadius.circular(5),
+                                            border:
+                                                Border.all(color: Colors.grey),
+                                            borderRadius:
+                                                BorderRadius.circular(5),
                                           ),
                                           child: Text(
                                             '${item.jumlah}',
@@ -229,7 +266,8 @@ class _CartScreenState extends State<CartScreen> {
                                   ],
                                 ),
                                 trailing: IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.red),
+                                  icon: const Icon(Icons.delete,
+                                      color: Colors.red),
                                   onPressed: () => _removeItem(item.id),
                                 ),
                               ),
@@ -286,7 +324,8 @@ class _CartScreenState extends State<CartScreen> {
                               backgroundColor: Colors.green,
                             ),
                             child: _isCheckingOut
-                                ? const CircularProgressIndicator(color: Colors.white)
+                                ? const CircularProgressIndicator(
+                                    color: Colors.white)
                                 : const Text(
                                     'Checkout',
                                     style: TextStyle(fontSize: 18),
